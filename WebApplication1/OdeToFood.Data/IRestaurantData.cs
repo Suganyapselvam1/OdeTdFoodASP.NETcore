@@ -1,4 +1,5 @@
-﻿using OdeToFood.Core;
+﻿using Microsoft.EntityFrameworkCore;
+using OdeToFood.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,54 @@ namespace OdeToFood.Data
         Restaurant GetRestaurant(int Id);
         Restaurant UpdateRestaurant(Restaurant restaurant);
         Restaurant CreateRestaurant(Restaurant restaurant);
+        Restaurant Delete(int id);
         int Commit();
+        public class SqlRestaurantData : IRestaurantData
+        {
+            private readonly OdeToFoodDbContext db;
+            public SqlRestaurantData(OdeToFoodDbContext db)
+            {
+                this.db = db;
+            }
+            public int Commit()
+            {
+                return db.SaveChanges();
+            }
+
+            public Restaurant CreateRestaurant(Restaurant restaurant)
+            {
+                db.Add(restaurant);
+                return restaurant;
+            }
+
+            public Restaurant Delete(int id)
+            {
+                var restaurant = GetRestaurant(id);
+                if (restaurant!=null)
+                {
+                    db.Resturants.Remove(restaurant);
+                }
+                return restaurant;
+            }
+
+            public Restaurant GetRestaurant(int Id)
+            {
+                return db.Resturants.Find(Id);
+            }
+
+            public IEnumerable<Restaurant> GetResturantByName(string name)
+            {
+                var query = from r in db.Resturants where r.Name.StartsWith(name) || string.IsNullOrEmpty(name) orderby r.Name select r;
+                return query;
+            }
+
+            public Restaurant UpdateRestaurant(Restaurant restaurant)
+            {
+                var entity = db.Resturants.Attach(restaurant);
+                entity.State = EntityState.Modified;
+                return restaurant;
+            }
+        }
         public class InMemoryRestaurantData : IRestaurantData
         {
             List<Restaurant> restaurants;
@@ -36,6 +84,16 @@ namespace OdeToFood.Data
                 restaurants.Add(newRestaurant);
                 newRestaurant.ID = restaurants.Max(r => r.ID) + 1;
                 return newRestaurant;
+            }
+
+            public Restaurant Delete(int id)
+            {
+                var restaurant = restaurants.FirstOrDefault(r=>r.ID==id);
+                if (restaurant!=null)
+                {
+                    restaurants.Remove(restaurant);
+                }
+                return restaurant;
             }
 
             public Restaurant GetRestaurant(int Id)
