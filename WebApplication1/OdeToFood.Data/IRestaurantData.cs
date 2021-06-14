@@ -15,6 +15,7 @@ namespace OdeToFood.Data
         Restaurant CreateRestaurant(Restaurant restaurant);
         Restaurant Delete(int id);
         int Commit();
+        int GetRestauranstCount();
         public class SqlRestaurantData : IRestaurantData
         {
             private readonly OdeToFoodDbContext db;
@@ -41,6 +42,11 @@ namespace OdeToFood.Data
                     db.Resturants.Remove(restaurant);
                 }
                 return restaurant;
+            }
+
+            public int GetRestauranstCount()
+            {
+                return db.Resturants.Count();
             }
 
             public Restaurant GetRestaurant(int Id)
@@ -94,6 +100,11 @@ namespace OdeToFood.Data
                     restaurants.Remove(restaurant);
                 }
                 return restaurant;
+            }
+
+            public int GetRestauranstCount()
+            {
+                return restaurants.Count();
             }
 
             public Restaurant GetRestaurant(int Id)
